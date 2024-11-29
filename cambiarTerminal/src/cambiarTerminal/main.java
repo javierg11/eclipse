@@ -9,62 +9,74 @@ import java.awt.*;
 import java.awt.event.*;
 
 public class main extends JFrame {
-	private final static String rutaImagenes = "/home/alumno/Descargas/imagenes";
+	protected final static String rutaImagenes = "/home/alumno/Descargas/imagenes";
 	private final static String rutaBanner = "/home/alumno/Descargas/banner";
-	private static final File carpeta = new File(rutaImagenes);
+	protected final static String terminacionImagen=".jpg";
+	protected static final File carpeta = new File(rutaImagenes);
 	static List<Integer> numerosUsados;
 	static int nuevoNumero = 0;
 	static int numeroSeleccionado = 0;
 	static Thread th;
 
 	private JButton btnCerrar, btnEjecutar, btnEjecutarBucle;
-	private JLabel imagenLabel, imagenLabel2;
+	protected static JLabel imagenLabel;
+	protected static JLabel imagenLabel2;
 	private main mainApp;
 	private boolean bucle = true;
-	private JPanel imagePanel;;
-	private int NumeroManual = 0;
+	protected static JPanel imagePanel;;
+	static int NumeroManual = 0;
 	private ImageIcon imageIcon;
-	private ImageIcon imageIcon2;
+	static ImageIcon imageIcon2;
 	private JScrollPane scrollPane;
 
 	public main() {
-		super("Titulo");
+		super("Visor de Imágenes");
 		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setLayout(new BorderLayout(10, 10));
 
-		imageIcon = new ImageIcon(rutaImagenes + "/1.jpg");
-		Image image = imageIcon.getImage().getScaledInstance(500, 300, Image.SCALE_SMOOTH);
+		// Panel principal con BorderLayout
+		JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+		mainPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+		mainPanel.setBackground(new Color(240, 240, 245));
+
+		// Panel para la imagen grande (a la izquierda)
+		imagePanel = new JPanel(new BorderLayout());
+		imageIcon = new ImageIcon(rutaImagenes + "/1" + terminacionImagen);
+		Image image = imageIcon.getImage().getScaledInstance(500,400, Image.SCALE_SMOOTH);
 		imagenLabel = new JLabel(new ImageIcon(image));
+		imagenLabel.setBorder(BorderFactory.createLineBorder(new Color(200, 200, 200), 2));
+		imagePanel.add(imagenLabel, BorderLayout.CENTER);
+		mainPanel.add(imagePanel, BorderLayout.CENTER);
 
-		add(imagenLabel, BorderLayout.NORTH);
-		imagePanel = new JPanel();
-
+		// Panel para el scrollPane (a la derecha)
+		JPanel rightPanel = new JPanel(new BorderLayout());
+		rightPanel.setPreferredSize(new Dimension(250, 0));
+		imagePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
+		imagePanel.setBackground(new Color(250, 250, 255));
 		scrollPane = new JScrollPane(imagePanel);
-		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
-		repintarScrollPanel();
+		scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_ALWAYS); // Scrollbar vertical
+		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER); // Sin scrollbar horizontal
+		RepintarInterfaz.repintarScrollPanel();
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		rightPanel.add(scrollPane, BorderLayout.CENTER);
+		mainPanel.add(rightPanel, BorderLayout.EAST);
+		
 
-		add(scrollPane, BorderLayout.CENTER);
-		pack();
-		setVisible(true);
-
-		JPanel panelBotones = new JPanel();
-		btnCerrar = new JButton("Cerrar");
-		btnEjecutar = new JButton("Ejecutar Aleatorio Uno");
-		btnEjecutarBucle = new JButton("Ejecutar Aleatorio Bucle");
-		btnCerrar.addActionListener(new OyenteBoton());
-		btnEjecutar.addActionListener(new OyenteBoton());
-		btnEjecutarBucle.addActionListener(new OyenteBoton());
+		// Panel de botones (abajo)
+		JPanel panelBotones = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+		panelBotones.setOpaque(false);
+		btnCerrar = createStyledButton("Cerrar", new Color(211, 47, 47));
+		btnEjecutar = createStyledButton("Ejecutar Aleatorio Uno", new Color(0, 120, 215));
+		btnEjecutarBucle = createStyledButton("Ejecutar Aleatorio Bucle", new Color(0, 150, 136));
 		panelBotones.add(btnCerrar);
 		panelBotones.add(btnEjecutar);
 		panelBotones.add(btnEjecutarBucle);
-		add(panelBotones, BorderLayout.SOUTH);
+		mainPanel.add(panelBotones, BorderLayout.SOUTH);
 
-		setSize(800, 500);
-		setDefaultCloseOperation(EXIT_ON_CLOSE);
-
+		add(mainPanel);
+		setSize(800, 600);
 		setLocationRelativeTo(null);
-
 		setVisible(true);
 
 	}
@@ -74,7 +86,24 @@ public class main extends JFrame {
 		main aplicacion = new main();
 
 	}
-
+	private JButton createStyledButton(String text, Color color) {
+	    JButton button = new JButton(text);
+	    button.setBackground(color);
+	    button.setForeground(Color.WHITE);
+	    button.setFocusPainted(false);
+	    button.setFont(new Font("Arial", Font.BOLD, 14));
+	    button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
+	    button.addMouseListener(new MouseAdapter() {
+	        public void mouseEntered(MouseEvent evt) {
+	            button.setBackground(color.brighter());
+	        }
+	        public void mouseExited(MouseEvent evt) {
+	            button.setBackground(color);
+	        }
+	    });
+	    button.addActionListener(new OyenteBoton());
+	    return button;
+	}
 	class OyenteBoton implements ActionListener {
 		public void actionPerformed(ActionEvent ae) {
 
@@ -83,7 +112,7 @@ public class main extends JFrame {
 				System.exit(0);
 			} else if (s.equals("Ejecutar Aleatorio Uno")) {
 
-				cambImagen();
+				cambTextoImagen();
 			} else if (s.equals("Ejecutar Aleatorio Bucle")) {
 				if (!bucle) {
 
@@ -98,134 +127,44 @@ public class main extends JFrame {
 	static class secundario implements Runnable {
 		@Override
 		public void run() {
-			renombrarArchivo(rutaImagenes, "1.jpg", nuevoNumero + ".jpg");
-			renombrarArchivo(rutaImagenes, numeroSeleccionado + ".jpg", "1.jpg");
+			//Este hilo cambia la imagen 1.jpg por numAleatorio.jpg y
+			//un numeroAleatorio pasa a la posicion 1.jpg
+			FunsionesNumeros.renombrarArchivo(rutaImagenes, "1"+terminacionImagen, nuevoNumero + ""+terminacionImagen);
+			FunsionesNumeros.renombrarArchivo(rutaImagenes, numeroSeleccionado + ""+terminacionImagen, "1"+terminacionImagen);
 
 		}
 	}
 
-	private void repintarScrollPanel() {
-		
-		imagePanel.removeAll();
-		
-		String[] archivos = carpeta.list();
-		if (archivos != null) {
-			for (String archivo : archivos) {
-				if (!archivo.equals("1.jpg")) {
+	
 
-					imageIcon2 = new ImageIcon(rutaImagenes + "/" + archivo);
-					//System.out.println(rutaImagenes + "/" + archivo);
-					Image image2 = imageIcon2.getImage().getScaledInstance(150, 100, Image.SCALE_SMOOTH);
-
-					imagenLabel2 = new JLabel(new ImageIcon(image2));
-					imagePanel.add(imagenLabel2);
-					// Si tocas una imagem coje el nombre de la imagen y la comvierte en la 1
-					imagenLabel2.addMouseListener(new MouseAdapter() {
-						@Override
-						public void mouseClicked(MouseEvent e) {
-							NumeroManual = Integer.parseInt(archivo.split("\\.")[0]);
-							cambImagen();
-							
-							
-							
-							repintarScrollPanel();
-						}
-					
-					});
-				}
-			}
-		}
-
-		
-	}
-
-	private void cambImagen() {
+	static void cambTextoImagen() {
 
 		th = new Thread(new secundario());
 
-		numerosUsados = obtenerNumerosUsados(rutaImagenes, ".jpg");
+		numerosUsados = FunsionesNumeros.obtenerNumerosUsados(rutaImagenes, terminacionImagen);
 
 		if (numerosUsados.isEmpty()) {
 			System.out.println("No hay archivos suficientes para renombrar.");
 
 		}
 
-		nuevoNumero = generarNuevoNumero(numerosUsados);
-		numeroSeleccionado = seleccionarNumeroAleatorio(numerosUsados, NumeroManual);
+		nuevoNumero = FunsionesNumeros.generarNuevoNumero(numerosUsados);
+		numeroSeleccionado = FunsionesNumeros.seleccionarNumeroAleatorio(numerosUsados, NumeroManual);
 
 		// Renombrar archivos de banner y imagen
 		th.start();
-		renombrarArchivo(rutaBanner, "1.txt", nuevoNumero + ".txt");
+		FunsionesNumeros.renombrarArchivo(rutaBanner, "1.txt", nuevoNumero + ".txt");
 
 		// Si quieres una cambia numeroSeleccionado
-		renombrarArchivo(rutaBanner, numeroSeleccionado + ".txt", "1.txt");
+		FunsionesNumeros.renombrarArchivo(rutaBanner, numeroSeleccionado + ".txt", "1.txt");
 		NumeroManual = 0;
-		ImageIcon imageIcon = new ImageIcon(rutaImagenes + "/1.jpg");
-		imageIcon.getImage().flush(); // Limpia el caché
-		Image image = imageIcon.getImage().getScaledInstance(500, 300, Image.SCALE_SMOOTH);
-		imagenLabel.setIcon(new ImageIcon(image));
-		imagenLabel.revalidate();
-		imagenLabel.repaint();
-		repintarScrollPanel();
+		
+		
+		//Repintar la interfaz despues de los cambios en los nombres de la imagenes
+		RepintarInterfaz.repintarImagenCentral();
+		RepintarInterfaz.repintarScrollPanel();
 
 	}
 
-	private static List<Integer> obtenerNumerosUsados(String ruta, String extension) {
-		File carpeta = new File(ruta);
-		File[] archivos = carpeta.listFiles();
-		List<Integer> numerosUsados = new ArrayList<>();
-
-		if (archivos != null) {
-			for (File archivo : archivos) {
-				String nombre = archivo.getName();
-				if (nombre.matches("\\d+" + extension)) {
-					int numero = Integer.parseInt(nombre.split("\\.")[0]);
-					numerosUsados.add(numero);
-				}
-			}
-		}
-		return numerosUsados;
-	}
-
-	private static int generarNuevoNumero(List<Integer> numerosUsados) {
-		int nuevoNumero;
-		do {
-			nuevoNumero = (int) (Math.random() * 99) + 1;
-		} while (numerosUsados.contains(nuevoNumero));
-		return nuevoNumero;
-	}
-
-	private static int seleccionarNumeroAleatorio(List<Integer> numeros, int NumeroManual) {
-		if (numeros.size() == 1 && numeros.get(0) == 1) {
-			return 1; // Si solo hay un archivo y es el 1, devolvemos 1
-		}
-		int indice;
-		int seleccionado;
-		do {
-			indice = (int) (Math.random() * numeros.size());
-			seleccionado = numeros.get(indice);
-		} while (seleccionado == 1);
-		if (NumeroManual == 0)
-			return seleccionado;
-		else {
-
-			return NumeroManual;
-
-		}
-	}
-
-	private static void renombrarArchivo(String ruta, String nombreViejo, String nombreNuevo) {
-		File archivoViejo = new File(ruta, nombreViejo);
-		File archivoNuevo = new File(ruta, nombreNuevo);
-
-		if (archivoViejo.exists()) {
-			if (archivoViejo.renameTo(archivoNuevo)) {
-				System.out.println("Archivo renombrado exitosamente: " + nombreViejo + " -> " + nombreNuevo);
-			} else {
-				System.out.println("No se pudo renombrar el archivo: " + nombreViejo);
-			}
-		} else {
-			System.out.println("El archivo no existe: " + nombreViejo);
-		}
-	}
+	
 }
