@@ -4,7 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FunsionesNumeros {
+public class Funciones extends main{
 	
 	//Mira en la carpeta los archivos que hay (todos son unnumero.jpg, ej:11.jpg)
 	static List<Integer> obtenerNumerosUsados(String ruta, String extension) {
@@ -64,5 +64,33 @@ public class FunsionesNumeros {
 		} else {
 			System.out.println("El archivo no existe: " + nombreViejo);
 		}
+	}
+	
+	static void cambTextoImagen() {
+
+		th = new Thread(new Hilos.secundario());
+
+		numerosUsados = Funciones.obtenerNumerosUsados(rutaImagenes, terminacionImagen);
+
+		if (numerosUsados.isEmpty()) {
+			System.out.println("No hay archivos suficientes para renombrar.");
+
+		}
+
+		nuevoNumero = Funciones.generarNuevoNumero(numerosUsados);
+		numeroSeleccionado = Funciones.seleccionarNumeroAleatorio(numerosUsados, NumeroManual);
+
+		// Renombrar archivos de banner y imagen
+		th.start();
+		Funciones.renombrarArchivo(rutaImagenes, "1" + terminacionImagen,
+				nuevoNumero + "" + terminacionImagen);
+		Funciones.renombrarArchivo(rutaImagenes, numeroSeleccionado + "" + terminacionImagen,
+				"1" + terminacionImagen);
+		NumeroManual = 0;
+
+		// Repintar la interfaz despues de los cambios en los nombres de la imagenes
+		RepintarInterfaz.repintarImagenCentral();
+		RepintarInterfaz.repintarScrollPanel();
+
 	}
 }
